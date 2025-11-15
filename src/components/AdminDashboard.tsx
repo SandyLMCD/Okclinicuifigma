@@ -12,7 +12,7 @@ import {
   Users, Calendar, DollarSign, 
   Search, Filter, Download, Edit, Trash2,
   Clock, TrendingUp,
-  FileText, Heart, LogOut, Plus, X, PawPrint
+  FileText, Heart, LogOut, Plus, X, PawPrint, Star
 } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
 import { toast } from 'sonner@2.0.3';
@@ -80,6 +80,19 @@ interface Pet {
   status: 'active' | 'inactive';
 }
 
+interface Feedback {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  category: string;
+  subject: string;
+  message: string;
+  rating: number;
+  submittedAt: string;
+  status: 'new' | 'reviewed' | 'resolved';
+}
+
 export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchTerm, setSearchTerm] = useState('');
@@ -126,6 +139,13 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     { id: '6', name: 'Surgery Consultation', category: 'Surgery', price: 100.00, duration: 45, status: 'inactive' },
   ]);
 
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([
+    { id: '1', userId: '1', userName: 'John Doe', userEmail: 'john@example.com', category: 'service-quality', subject: 'Excellent service!', message: 'The staff was very professional and my dog Buddy received great care.', rating: 5, submittedAt: '2025-11-14', status: 'reviewed' },
+    { id: '2', userId: '2', userName: 'Jane Smith', userEmail: 'jane@example.com', category: 'facility-cleanliness', subject: 'Very clean facility', message: 'I was impressed with how clean everything was. Great experience overall.', rating: 5, submittedAt: '2025-11-13', status: 'resolved' },
+    { id: '3', userId: '3', userName: 'Bob Johnson', userEmail: 'bob@example.com', category: 'wait-time', subject: 'Long wait time', message: 'Had to wait 45 minutes past my appointment time. Otherwise good service.', rating: 3, submittedAt: '2025-11-12', status: 'new' },
+    { id: '4', userId: '4', userName: 'Alice Williams', userEmail: 'alice@example.com', category: 'staff-behavior', subject: 'Friendly staff', message: 'Everyone was so kind and patient with my nervous cat Luna.', rating: 5, submittedAt: '2025-11-11', status: 'reviewed' },
+  ]);
+
   // Dialog states
   const [appointmentDialogOpen, setAppointmentDialogOpen] = useState(false);
   const [clientDialogOpen, setClientDialogOpen] = useState(false);
@@ -148,6 +168,7 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
   const [invoiceFilter, setInvoiceFilter] = useState<string>('all');
   const [serviceFilter, setServiceFilter] = useState<string>('all');
   const [petFilter, setPetFilter] = useState<string>('all');
+  const [feedbackFilter, setFeedbackFilter] = useState<string>('all');
 
   // Form states
   const [appointmentForm, setAppointmentForm] = useState({
@@ -210,6 +231,13 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
       pet.id === id ? { ...pet, status: newStatus } : pet
     ));
     toast.success('Pet status updated');
+  };
+
+  const updateFeedbackStatus = (id: string, newStatus: Feedback['status']) => {
+    setFeedbacks(feedbacks.map(feedback => 
+      feedback.id === id ? { ...feedback, status: newStatus } : feedback
+    ));
+    toast.success('Feedback status updated');
   };
 
   // Add/Edit handlers
@@ -540,6 +568,10 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
         }
         toast.success('Pet deleted successfully');
         break;
+      case 'feedback':
+        setFeedbacks(feedbacks.filter(feedback => feedback.id !== deleteItem.id));
+        toast.success('Feedback deleted successfully');
+        break;
     }
 
     setDeleteDialogOpen(false);
@@ -639,6 +671,21 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
     return filtered;
   };
 
+  const getFilteredFeedbacks = () => {
+    let filtered = feedbacks.filter(feedback => 
+      feedback.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      feedback.userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      feedback.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      feedback.message.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    if (feedbackFilter !== 'all') {
+      filtered = filtered.filter(feedback => feedback.status === feedbackFilter);
+    }
+
+    return filtered;
+  };
+
   // Statistics
   const totalRevenue = invoices.filter(i => i.status === 'paid').reduce((sum, i) => sum + i.amount, 0);
   const pendingRevenue = invoices.filter(i => i.status === 'pending' || i.status === 'overdue').reduce((sum, i) => sum + i.amount, 0);
@@ -684,13 +731,14 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-6 mb-8">
+          <TabsList className="grid w-full grid-cols-7 mb-8">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="appointments">Appointments</TabsTrigger>
             <TabsTrigger value="pets">Pet Patients</TabsTrigger>
             <TabsTrigger value="clients">Clients</TabsTrigger>
             <TabsTrigger value="invoices">Invoices</TabsTrigger>
             <TabsTrigger value="services">Services</TabsTrigger>
+            <TabsTrigger value="feedback">Feedback</TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
@@ -1307,6 +1355,114 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                               <Edit className="w-4 h-4" />
                             </Button>
                             <Button variant="ghost" size="sm" onClick={() => handleDeleteClick('service', service.id, service.name)}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Feedback Tab */}
+          <TabsContent value="feedback" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="mb-2">Customer Feedback</h2>
+                <p className="text-muted-foreground">View and manage customer feedback and reviews</p>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search feedback..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Select value={feedbackFilter} onValueChange={setFeedbackFilter}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="new">New</SelectItem>
+                  <SelectItem value="reviewed">Reviewed</SelectItem>
+                  <SelectItem value="resolved">Resolved</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" onClick={() => exportToCSV(getFilteredFeedbacks(), 'feedback')}>
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
+            </div>
+
+            <Card>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Category</TableHead>
+                      <TableHead>Subject</TableHead>
+                      <TableHead>Rating</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {getFilteredFeedbacks().map((feedback) => (
+                      <TableRow key={feedback.id}>
+                        <TableCell>
+                          <div>
+                            <p>{feedback.userName}</p>
+                            <p className="text-muted-foreground">{feedback.userEmail}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="capitalize">{feedback.category.replace('-', ' ')}</TableCell>
+                        <TableCell>{feedback.subject}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: feedback.rating }).map((_, i) => (
+                              <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell>{new Date(feedback.submittedAt).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <Select
+                            value={feedback.status}
+                            onValueChange={(value) => updateFeedbackStatus(feedback.id, value as Feedback['status'])}
+                          >
+                            <SelectTrigger className={`w-[120px] ${getStatusColor(feedback.status)}`}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="new">New</SelectItem>
+                              <SelectItem value="reviewed">Reviewed</SelectItem>
+                              <SelectItem value="resolved">Resolved</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => {
+                                toast.info(`Message: ${feedback.message}`);
+                              }}
+                            >
+                              View
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteClick('feedback', feedback.id, feedback.subject)}>
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>

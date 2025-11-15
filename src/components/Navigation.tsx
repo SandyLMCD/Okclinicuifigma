@@ -1,9 +1,9 @@
 import { Button } from './ui/button';
-import { Home, Calendar, CreditCard, LogOut, FileText } from 'lucide-react';
+import { Home, Calendar, LogOut, FileText, MessageSquare } from 'lucide-react';
 
 interface NavigationProps {
   currentPage: string;
-  onNavigate: (page: 'profile' | 'booking' | 'balance' | 'invoices') => void;
+  onNavigate: (page: 'profile' | 'booking' | 'invoices' | 'feedback') => void;
   onLogout: () => void;
 }
 
@@ -36,21 +36,21 @@ export function Navigation({ currentPage, onNavigate, onLogout }: NavigationProp
             </Button>
             
             <Button 
-              variant={currentPage === 'balance' ? 'default' : 'ghost'} 
-              size="sm"
-              onClick={() => onNavigate('balance')}
-            >
-              <CreditCard className="w-4 h-4 mr-2" />
-              Balance
-            </Button>
-            
-            <Button 
               variant={currentPage === 'invoices' ? 'default' : 'ghost'} 
               size="sm"
               onClick={() => onNavigate('invoices')}
             >
               <FileText className="w-4 h-4 mr-2" />
               Invoices
+            </Button>
+            
+            <Button 
+              variant={currentPage === 'feedback' ? 'default' : 'ghost'} 
+              size="sm"
+              onClick={() => onNavigate('feedback')}
+            >
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Feedback
             </Button>
             
             <Button 

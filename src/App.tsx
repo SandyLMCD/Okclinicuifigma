@@ -5,12 +5,12 @@ import { ProfilePage } from './components/ProfilePage';
 import { BookingPage } from './components/BookingPage';
 import { CheckoutPage } from './components/CheckoutPage';
 import { PasswordResetPage } from './components/PasswordResetPage';
-import { BalancePage } from './components/BalancePage';
 import { InvoicesPage } from './components/InvoicesPage';
+import { FeedbackPage } from './components/FeedbackPage';
 import { AdminDashboard } from './components/AdminDashboard';
 import { Navigation } from './components/Navigation';
 
-type Page = 'login' | 'signup' | 'profile' | 'booking' | 'checkout' | 'password-reset' | 'balance' | 'invoices' | 'admin';
+type Page = 'login' | 'signup' | 'profile' | 'booking' | 'checkout' | 'password-reset' | 'invoices' | 'feedback' | 'admin';
 
 interface User {
   id: string;
@@ -18,7 +18,6 @@ interface User {
   name: string;
   phone: string;
   address: string;
-  balance: number;
 }
 
 interface Pet {
@@ -191,10 +190,10 @@ export default function App() {
         return <CheckoutPage appointment={currentAppointment} user={user} onPaymentComplete={handlePaymentComplete} onNavigate={navigateTo} />;
       case 'password-reset':
         return <PasswordResetPage onNavigateToLogin={() => navigateTo('login')} />;
-      case 'balance':
-        return <BalancePage user={user} onNavigate={navigateTo} />;
       case 'invoices':
         return <InvoicesPage user={user} onNavigate={navigateTo} />;
+      case 'feedback':
+        return <FeedbackPage user={user} onNavigate={navigateTo} />;
       case 'admin':
         return <AdminDashboard onLogout={handleLogout} />;
       default:

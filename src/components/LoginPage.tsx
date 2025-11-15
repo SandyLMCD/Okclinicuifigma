@@ -12,19 +12,20 @@ interface LoginPageProps {
 }
 
 export function LoginPage({ onLogin, onNavigateToSignup, onNavigateToPasswordReset }: LoginPageProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock login - in real app this would authenticate with backend
+    // Mock login - in a real app, this would call an API
     const mockUser = {
       id: '1',
-      email: email,
-      name: 'John Smith',
+      email: formData.email,
+      name: 'John Doe',
       phone: '+1 (555) 123-4567',
-      address: '123 Main St, City, State 12345',
-      balance: 150.00
+      address: '123 Main St, City, State 12345'
     };
     onLogin(mockUser);
   };
@@ -41,15 +42,15 @@ export function LoginPage({ onLogin, onNavigateToSignup, onNavigateToPasswordRes
         </CardHeader>
         
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
               />
             </div>
@@ -60,8 +61,8 @@ export function LoginPage({ onLogin, onNavigateToSignup, onNavigateToPasswordRes
                 id="password"
                 type="password"
                 placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
               />
             </div>

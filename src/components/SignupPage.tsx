@@ -32,14 +32,13 @@ export function SignupPage({ onSignup, onNavigateToLogin }: SignupPageProps) {
       return;
     }
     
-    // Mock signup - in real app this would create account in backend
+    // Mock signup - in a real app, this would call an API
     const newUser = {
       id: Date.now().toString(),
       email: formData.email,
       name: formData.name,
       phone: formData.phone,
-      address: formData.address,
-      balance: 0.00
+      address: formData.address
     };
     onSignup(newUser);
   };

@@ -13,7 +13,6 @@ interface User {
   name: string;
   phone: string;
   address: string;
-  balance: number;
 }
 
 interface Pet {
@@ -50,7 +49,7 @@ interface ProfilePageProps {
   appointments: Appointment[];
   onUpdateUser: (user: User) => void;
   onUpdatePets: (pets: Pet[]) => void;
-  onNavigate: (page: 'booking' | 'balance' | 'invoices') => void;
+  onNavigate: (page: 'booking' | 'invoices' | 'feedback') => void;
 }
 
 export function ProfilePage({ user, pets, appointments, onUpdateUser, onUpdatePets, onNavigate }: ProfilePageProps) {
@@ -63,8 +62,7 @@ export function ProfilePage({ user, pets, appointments, onUpdateUser, onUpdatePe
     email: '',
     name: '',
     phone: '',
-    address: '',
-    balance: 0
+    address: ''
   });
   
   const [petForm, setPetForm] = useState({
@@ -102,7 +100,7 @@ export function ProfilePage({ user, pets, appointments, onUpdateUser, onUpdatePe
             <Calendar className="w-4 h-4 mr-2" />
             Book Appointment
           </Button>
-          <Button variant="outline" onClick={() => onNavigate('balance')}>
+          <Button variant="outline" onClick={() => onNavigate('invoices')}>
             <DollarSign className="w-4 h-4 mr-2" />
             Manage Balance
           </Button>
@@ -189,24 +187,6 @@ export function ProfilePage({ user, pets, appointments, onUpdateUser, onUpdatePe
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      {/* Account Balance */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Account Balance</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-2xl">${user.balance.toFixed(2)}</p>
-              <p className="text-muted-foreground">Available balance</p>
-            </div>
-            <Button variant="outline" onClick={() => onNavigate('balance')}>
-              Manage Balance
-            </Button>
-          </div>
         </CardContent>
       </Card>
 
