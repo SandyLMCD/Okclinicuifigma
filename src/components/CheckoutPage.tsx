@@ -3,10 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
 import { Separator } from './ui/separator';
-import { CreditCard, Calendar, Clock, Heart, CheckCircle } from 'lucide-react';
+import { Calendar, Clock, Heart, CheckCircle } from 'lucide-react';
 
 interface Service {
   id: string;
@@ -30,7 +29,6 @@ interface User {
   name: string;
   phone: string;
   address: string;
-  balance: number;
 }
 
 interface Appointment {
@@ -50,7 +48,6 @@ interface CheckoutPageProps {
 }
 
 export function CheckoutPage({ appointment, user, onPaymentComplete, onNavigate }: CheckoutPageProps) {
-  const [paymentMethod, setPaymentMethod] = useState<'card' | 'balance'>('card');
   const [cardDetails, setCardDetails] = useState({
     number: '',
     expiry: '',
@@ -77,7 +74,6 @@ export function CheckoutPage({ appointment, user, onPaymentComplete, onNavigate 
   const isBookingOnly = !appointment.services || appointment.services.length === 0;
   const depositAmount = isBookingOnly ? 0 : servicesTotal * 0.5;
   const balanceDue = servicesTotal - depositAmount;
-  const canPayWithBalance = user && user.balance >= depositAmount;
 
   if (!appointment.date || !appointment.time || !appointment.pet || !appointment.services) {
     return (
@@ -250,102 +246,57 @@ export function CheckoutPage({ appointment, user, onPaymentComplete, onNavigate 
                       <strong>Note:</strong> The deposit is non-refundable. Remaining balance (${balanceDue.toFixed(2)}) is due at your appointment.
                     </p>
                   </div>
-                  
-                  <div className="space-y-3">
-                    <div 
-                      className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                        paymentMethod === 'card' ? 'ring-2 ring-primary bg-primary/5' : 'hover:bg-muted'
-                      }`}
-                      onClick={() => setPaymentMethod('card')}
-                    >
-                      <div className="flex items-center gap-3">
-                        <CreditCard className="w-5 h-5" />
-                        <div>
-                          <p>Credit/Debit Card</p>
-                          <p className="text-sm text-muted-foreground">Pay with your card</p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {user && (
-                      <div 
-                        className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                          paymentMethod === 'balance' ? 'ring-2 ring-primary bg-primary/5' : 'hover:bg-muted'
-                        } ${!canPayWithBalance ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        onClick={() => canPayWithBalance && setPaymentMethod('balance')}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                              <span className="text-xs text-primary-foreground">$</span>
-                            </div>
-                            <div>
-                              <p>Account Balance</p>
-                              <p className="text-sm text-muted-foreground">
-                                Available: ${user.balance.toFixed(2)}
-                              </p>
-                            </div>
-                          </div>
-                          {!canPayWithBalance && (
-                            <Badge variant="destructive">Insufficient</Badge>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
                 </CardContent>
               </Card>
 
               {/* Card Details */}
-              {paymentMethod === 'card' && !isBookingOnly && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Card Details</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Card Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="cardName">Cardholder Name</Label>
+                    <Input
+                      id="cardName"
+                      placeholder="Name on card"
+                      value={cardDetails.name}
+                      onChange={(e) => setCardDetails({...cardDetails, name: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="cardNumber">Card Number</Label>
+                    <Input
+                      id="cardNumber"
+                      placeholder="1234 5678 9012 3456"
+                      value={cardDetails.number}
+                      onChange={(e) => setCardDetails({...cardDetails, number: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="cardName">Cardholder Name</Label>
+                      <Label htmlFor="expiry">Expiry Date</Label>
                       <Input
-                        id="cardName"
-                        placeholder="Name on card"
-                        value={cardDetails.name}
-                        onChange={(e) => setCardDetails({...cardDetails, name: e.target.value})}
+                        id="expiry"
+                        placeholder="MM/YY"
+                        value={cardDetails.expiry}
+                        onChange={(e) => setCardDetails({...cardDetails, expiry: e.target.value})}
                       />
                     </div>
-                    
                     <div>
-                      <Label htmlFor="cardNumber">Card Number</Label>
+                      <Label htmlFor="cvv">CVV</Label>
                       <Input
-                        id="cardNumber"
-                        placeholder="1234 5678 9012 3456"
-                        value={cardDetails.number}
-                        onChange={(e) => setCardDetails({...cardDetails, number: e.target.value})}
+                        id="cvv"
+                        placeholder="123"
+                        value={cardDetails.cvv}
+                        onChange={(e) => setCardDetails({...cardDetails, cvv: e.target.value})}
                       />
                     </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="expiry">Expiry Date</Label>
-                        <Input
-                          id="expiry"
-                          placeholder="MM/YY"
-                          value={cardDetails.expiry}
-                          onChange={(e) => setCardDetails({...cardDetails, expiry: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="cvv">CVV</Label>
-                        <Input
-                          id="cvv"
-                          placeholder="123"
-                          value={cardDetails.cvv}
-                          onChange={(e) => setCardDetails({...cardDetails, cvv: e.target.value})}
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Confirm Payment */}
               <Card>
@@ -362,7 +313,7 @@ export function CheckoutPage({ appointment, user, onPaymentComplete, onNavigate 
                     <Button 
                       className="w-full" 
                       onClick={handlePayment}
-                      disabled={processing || (paymentMethod === 'balance' && !canPayWithBalance)}
+                      disabled={processing}
                     >
                       {processing ? (
                         <>Processing...</>

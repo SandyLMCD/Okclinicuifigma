@@ -185,7 +185,7 @@ export default function App() {
       case 'profile':
         return <ProfilePage user={user} pets={pets} appointments={appointments} onUpdateUser={setUser} onUpdatePets={setPets} onNavigate={navigateTo} />;
       case 'booking':
-        return <BookingPage pets={pets} onBookingComplete={handleBookingDetails} onNavigate={navigateTo} />;
+        return <BookingPage pets={pets} appointments={appointments} onBookingComplete={handleBookingDetails} onNavigate={navigateTo} />;
       case 'checkout':
         return <CheckoutPage appointment={currentAppointment} user={user} onPaymentComplete={handlePaymentComplete} onNavigate={navigateTo} />;
       case 'password-reset':

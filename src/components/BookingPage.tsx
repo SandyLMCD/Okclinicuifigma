@@ -24,8 +24,21 @@ interface Service {
   category: string;
 }
 
+interface Appointment {
+  id: string;
+  date: string;
+  time: string;
+  services: Service[];
+  pet: Pet;
+  total: number;
+  notes?: string;
+  status: 'upcoming' | 'completed' | 'cancelled';
+  depositPaid?: number;
+}
+
 interface BookingPageProps {
   pets: Pet[];
+  appointments: Appointment[];
   onBookingComplete: (details: { 
     date: string; 
     time: string; 
@@ -110,7 +123,7 @@ const availableServices: Service[] = [
 
 type BookingStep = 'details' | 'services' | 'confirmation';
 
-export function BookingPage({ pets, onBookingComplete, onNavigate }: BookingPageProps) {
+export function BookingPage({ pets, appointments, onBookingComplete, onNavigate }: BookingPageProps) {
   const [currentStep, setCurrentStep] = useState<BookingStep>('details');
   
   // Step 1: Booking Details
@@ -174,6 +187,24 @@ export function BookingPage({ pets, onBookingComplete, onNavigate }: BookingPage
   const depositAmount = servicesTotal > 0 ? servicesTotal * 0.5 : 0;
   const categories = Array.from(new Set(availableServices.map(service => service.category)));
 
+  // Check date availability
+  const getDateAvailability = (date: Date) => {
+    const dateStr = date.toISOString().split('T')[0];
+    const appointmentsOnDate = appointments.filter(apt => apt.date === dateStr && apt.status !== 'cancelled');
+    return appointmentsOnDate.length;
+  };
+
+  // Check time slot availability
+  const isTimeSlotAvailable = (time: string) => {
+    if (!selectedDate) return true;
+    const dateStr = selectedDate.toISOString().split('T')[0];
+    return !appointments.some(apt => 
+      apt.date === dateStr && 
+      apt.time === time && 
+      apt.status !== 'cancelled'
+    );
+  };
+
   // Step 1: Booking Details
   if (currentStep === 'details') {
     return (
@@ -227,14 +258,44 @@ export function BookingPage({ pets, onBookingComplete, onNavigate }: BookingPage
                 <CardTitle>Select Date</CardTitle>
                 <CardDescription>Choose your preferred appointment date</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
                 <Calendar
                   mode="single"
                   selected={selectedDate}
                   onSelect={setSelectedDate}
                   disabled={(date) => date < minDate}
                   className="rounded-md border"
+                  modifiers={{
+                    booked: (date) => getDateAvailability(date) >= timeSlots.length,
+                    partiallyBooked: (date) => {
+                      const count = getDateAvailability(date);
+                      return count > 0 && count < timeSlots.length;
+                    }
+                  }}
+                  modifiersClassNames={{
+                    booked: 'bg-red-100 dark:bg-red-950 text-red-900 dark:text-red-100',
+                    partiallyBooked: 'bg-amber-100 dark:bg-amber-950 text-amber-900 dark:text-amber-100'
+                  }}
                 />
+                
+                {/* Legend */}
+                <div className="space-y-2 pt-4 border-t">
+                  <p className="text-sm">Availability Legend:</p>
+                  <div className="flex flex-wrap gap-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-green-100 dark:bg-green-950 border"></div>
+                      <span>Available</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-amber-100 dark:bg-amber-950 border"></div>
+                      <span>Limited Slots</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-red-100 dark:bg-red-950 border"></div>
+                      <span>Fully Booked</span>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
@@ -278,6 +339,7 @@ export function BookingPage({ pets, onBookingComplete, onNavigate }: BookingPage
                         size="sm"
                         onClick={() => setSelectedTime(time)}
                         className="flex items-center gap-2"
+                        disabled={!isTimeSlotAvailable(time)}
                       >
                         <Clock className="w-4 h-4" />
                         {time}

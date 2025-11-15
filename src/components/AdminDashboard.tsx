@@ -1558,6 +1558,48 @@ export function AdminDashboard({ onLogout }: AdminDashboardProps) {
                 />
               </div>
             </div>
+            
+            {/* Availability Check */}
+            {appointmentForm.date && appointmentForm.time && (
+              (() => {
+                const isSlotTaken = appointments.some(apt => 
+                  apt.date === appointmentForm.date && 
+                  apt.time === appointmentForm.time && 
+                  apt.status !== 'cancelled' &&
+                  apt.status !== 'no-show' &&
+                  (!editingAppointment || apt.id !== editingAppointment.id)
+                );
+                const appointmentsOnDate = appointments.filter(apt => 
+                  apt.date === appointmentForm.date && 
+                  apt.status !== 'cancelled' && 
+                  apt.status !== 'no-show'
+                ).length;
+                
+                return (
+                  <div className="space-y-2">
+                    {isSlotTaken ? (
+                      <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg">
+                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                        <p className="text-sm text-red-900 dark:text-red-100">
+                          This time slot is already booked
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg">
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                        <p className="text-sm text-green-900 dark:text-green-100">
+                          This time slot is available
+                        </p>
+                      </div>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {appointmentsOnDate} appointment(s) scheduled for this date
+                    </p>
+                  </div>
+                );
+              })()
+            )}
+            
             <div className="space-y-2">
               <Label>Amount</Label>
               <Input
